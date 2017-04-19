@@ -9,32 +9,22 @@ int main() {
   int sort[LIMIT];      // cardinality array
 
   for(int i = 0; i < LIMIT; i++) {
-
     sort[i] = 0;            // uninitialized table contains garbage
-
   }
 
   for(int i = 0; i < n; i++) {
-
     sort[testArray[i]]++;
-
   }
 
   for(int j = 0; j < LIMIT; j++) {
-
     if(max < sort[j]) {
-
       max = sort[j];
-
     }
   }
 
   for(int k = 0; k < LIMIT; k++) {
-
     if(sort[k] == max) {
-
       printf("Number %d is one of most frequent numbers.\n", k);
-
     }
   }
   printf("Each of mentioned numbers ocurred %d times.\n", max);
