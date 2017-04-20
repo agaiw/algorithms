@@ -70,7 +70,8 @@ int compare_ints(const void* a, const void* b) {
   }
   else if (_a == _b) {
     return 0;
-  } else {
+  }
+  else {
     return 1;
   }
 }
