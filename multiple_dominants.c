@@ -41,10 +41,10 @@ int main() {
   int currentCard = 1;
 
   for(int j = 0; j < (SIZE - 1); j++) {
-    if(testArray[j] == testArray[j+1]) {   // stepping through same values in sorted array
+    if(testArray[j] == testArray[j+1]) {   // stepping through same values in sorted array...
       currentCard++;
     }   
-    else {                                 // different value encountered
+    else {                                 // ...until different value encountered
       if(max < currentCard) {
         max = currentCard;
       }
