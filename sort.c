@@ -80,11 +80,18 @@ void bubbleSort(int array[], int size) {
 
 void insertionSort(int array[], int size) {
   for (int i = 1; i < size; ++i) {
+    int temp = array[i];
     for (int j = i; j > 0; --j) {
-      if (array[j] < array[j-1]) {
-        int temp = array[j];
+      if (temp < array[j-1]) {
         array[j] = array[j-1];
-        array[j-1] = temp;
+        if (j == 1) {
+          array[j-1] = temp;
+          break;    // we can stop for-loop because element is inserted
+        }
+      }
+      else {
+        array[j] = temp;
+        break;    // we can stop for-loop because element is inserted
       }
     }
   }
