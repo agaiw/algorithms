@@ -19,21 +19,23 @@ void treeizeNodes(node** start, node** newNode, node **right, node **left);
 void findLowest(node** start, node** lowest);
 void calculateCodes(node** start, char* code);
 void findRoot(node** start, node** root);
+void freeList(node** start);
 
 int main (int argc, char* argv[]) {
   node* start = NULL;
-  char* input = "Huffman";
+  char* input = "ala";
   const int freqSum = strlen(input);
   calculateFrequencies(input, &start);
   generateTree(&start, freqSum);
   node* root = NULL;
   findRoot(&start, &root);
 
-  char* code = malloc(sizeof(char));
-  strcpy(code, "0");
-  calculateCodes(&(root->left), code);
-  strcpy(code, "1");
-  calculateCodes(&(root->right), code);
+  char* code0 = malloc(2 * sizeof(char));
+  strcpy(code0, "0");
+  calculateCodes(&(root->left), code0);
+  char* code1 = malloc(2 * sizeof(char));
+  strcpy(code1, "1");
+  calculateCodes(&(root->right), code1);
  
   // test
   node* temp_p = start;
@@ -44,7 +46,19 @@ int main (int argc, char* argv[]) {
            temp_p->left, temp_p->treeized);
     temp_p = temp_p->next_p;
   }
+  freeList(&start);
   return 0;
+}
+
+void freeList(node** start) {
+  node* curr_p = *start;
+  node* next_p = (*start)->next_p;
+  while (next_p != NULL) {
+    free(curr_p);
+    curr_p = next_p;
+    next_p = next_p->next_p;
+  }
+  free(curr_p);
 }
 
 void findRoot(node** start, node** root) {
@@ -62,16 +76,18 @@ void findRoot(node** start, node** root) {
 void calculateCodes(node** nd, char* code) {
   if ((*nd)->character != '\0') {
     printf("character: %c, code: %s\n", (*nd)->character, code);
+    free(code);
   }
   else {
     int len = strlen(code) + 2;
-    char* newCode = malloc(len * sizeof(char));
-    strcpy(newCode, code);
-    strcat(newCode, "0");
-    calculateCodes(&((**nd).left), newCode);
-    strcpy(newCode, code);
-    strcat(newCode, "1");
-    calculateCodes(&((**nd).right), newCode);
+    char* newCode0 = malloc(len * sizeof(char));
+    strcpy(newCode0, code);
+    strcat(newCode0, "0");
+    calculateCodes(&((**nd).left), newCode0);
+    char* newCode1 = malloc(len * sizeof(char));
+    strcpy(newCode1, code);
+    strcat(newCode1, "1");
+    calculateCodes(&((**nd).right), newCode1);
     free(code);
   }
 }
@@ -86,7 +102,7 @@ void generateTree(node** start, const int freqSum) {
     treeizeNodes(start, &newNode, &right, &left);
     if (newNode->frequency == freqSum) {
       return;
-  }
+    }
   }  
 }
 
