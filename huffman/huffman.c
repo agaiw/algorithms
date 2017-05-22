@@ -13,19 +13,108 @@ typedef struct node {
   int treeized;
 } node;
 
+/* Function:    calculateFrequencies 
+*
+* Description:  Takes a string of characters and creates linked list
+*               of 'node'-type structures based on this input.
+*               This function fills only certain fields of nodes with meaningful data:
+*               character, frequency and next_p pointing to next node. 
+*
+* Parameters:   [in] input - input string
+*               [out] start - head of nodes list
+*
+* Return:       void
+*/
 void calculateFrequencies(char* input, node** start);
+
+/* Function:    generateTree 
+*
+* Description:  Takes 'node' list as input and generates Huffman tree based on
+*               frequencies of characters. This function extends original list with
+*               non-character nodes and adds tree-specific relations between nodes
+*               using 'left' and 'right' members of 'node' structure.
+*               Root node is the node which has 'treeized' member equal to zero.
+*               Other nodes, as well as leaves (=characters) have 'treeized' member
+*               equal to 1. 
+*               
+*
+* Parameters:   [in] start - head of nodes list
+*               [in] freqSum - length of input, which shall be equal to
+*               sum of all frequencies
+*
+* Return:       void
+*/
 void generateTree(node** start, const int freqSum);
-int sthToTreeize(node** start);
+
+/* Function:    treeizeNodes 
+*
+* Description:  Constructs new node based on other nodes which are not already treeized
+*               and have lowest frequencies amongst other non-treeized nodes. Links this
+*               newly created node with its left and right nodes, creating fragment of future tree.
+*
+* Parameters:   [in] start - head of nodes list
+*               [in/out] newNode - pointer to new empty node
+*               [in] right - pointer to right child of newNode
+*               [in] left - pointer to left child of newNode
+*
+* Return:       void
+*/
 void treeizeNodes(node** start, node** newNode, node **right, node **left);
+
+/* Function:    findLowest 
+*
+* Description:  Finds node which has lowest frequency amongst all not-yet-treeized nodes.
+*
+* Parameters:   [in] start - head of nodes list
+*               [in/out] lowest - pointer to lowest node
+*
+* Return:       void
+*/
 void findLowest(node** start, node** lowest);
-void calculateCodes(node** start, char** code);
+
+/* Function:    calculateCodes 
+*
+* Description:  Recursive function, which traverses whole Huffman tree
+*               and constructs Huffman codes for each of character. When it goes left
+*               down the tree, it adds '0' to the code. Otherwise it adds '1'.
+*               Then, it triggers itself twice.
+*
+* Parameters:   [in] nd - current node on which function jumps when traversing down the 
+*               Huffman tree
+*               [in] code - Fragment of Huffman code already constructed
+*
+* Return:       void
+*/
+void calculateCodes(node** nd, char** code);
+
+/* Function:    findRoot 
+*
+* Description:  Traverses throught list of nodes, finding the one which acts
+*               as a root of Huffman tree.
+*
+* Parameters:   [in] start - head of nodes list
+*               [in/out] root - root node of Huffman tree
+*
+* Return:       void
+*/
 void findRoot(node** start, node** root);
+
+/* Function:    freeList 
+*
+* Description:  Frees memory previously allocated for all nodes of Huffman tree
+*               and all strings representing Huffman codes.
+*
+* Parameters:   [in] start - head of nodes list
+*
+* Return:       void
+*/
 void freeList(node** start);
 
 int main (int argc, char* argv[]) {
 
   node* start = NULL;
   char* input = "In computer science and information theory, a Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression. The process of finding and/or using such a code proceeds by means of Huffman coding, an algorithm developed by David A. Huffman while he was a Sc.D. student at MIT, and published in the 1952 paper 'A Method for the Construction of Minimum-Redundancy Codes'. The output from Huffman's algorithm can be viewed as a variable-length code table for encoding a source symbol (such as a character in a file). The algorithm derives this table from the estimated probability or frequency of occurrence (weight) for each possible value of the source symbol. As in other entropy encoding methods, more common symbols are generally represented using fewer bits than less common symbols. Huffman's method can be efficiently implemented, finding a code in time linear to the number of input weights if these weights are sorted.[2] However, although optimal among methods encoding symbols separately, Huffman coding is not always optimal among all compression methods.";
+
   const int freqSum = strlen(input);
   calculateFrequencies(input, &start);
   generateTree(&start, freqSum);
@@ -39,16 +128,6 @@ int main (int argc, char* argv[]) {
   strcpy(code1, "1");
   calculateCodes(&(root->right), &code1);
  
-  // test
-  node* temp_p = start;
-  while (temp_p != NULL) {
-    printf("ch: %c, fr: %d, code: %s, addr: %p, next: %p, r: %p, l: %p, tree: %d\n", 
-           temp_p->character,
-           temp_p->frequency, temp_p->code, temp_p, temp_p->next_p, temp_p->right,
-           temp_p->left, temp_p->treeized);
-    temp_p = temp_p->next_p;
-  }
-  freeList(&start);
   return 0;
 }
 
@@ -98,7 +177,7 @@ void calculateCodes(node** nd, char** code) {
 }
 
 void generateTree(node** start, const int freqSum) {
-  while (sthToTreeize(start)) {
+  while (1) {
     node* right = NULL;
     findLowest(start, &right);
     node* left = NULL;
@@ -140,18 +219,6 @@ void findLowest(node** start, node** lowest) {
     temp_p = temp_p->next_p;
   }
   (*lowest)->treeized = 1;
-}
-
-int sthToTreeize(node** start) {
-  int result = 0;
-  node* temp_p = *start;
-  while (temp_p != NULL) {
-    if (temp_p->treeized == 0) {
-      result = 1;
-    }
-    temp_p = temp_p->next_p; 
-  }
-  return result;
 }
 
 void calculateFrequencies(char* input, node** start) {
