@@ -22,7 +22,7 @@ void findRoot(node** start, node** root);
 
 int main (int argc, char* argv[]) {
   node* start = NULL;
-  char* input = "odra modra";
+  char* input = "Huffman";
   const int freqSum = strlen(input);
   calculateFrequencies(input, &start);
   generateTree(&start, freqSum);
@@ -31,9 +31,9 @@ int main (int argc, char* argv[]) {
 
   char* code = malloc(sizeof(char));
   strcpy(code, "0");
-  calculateCodes(&root->left, code);
+  calculateCodes(&(root->left), code);
   strcpy(code, "1");
-  calculateCodes(&root->right, code);
+  calculateCodes(&(root->right), code);
  
   // test
   node* temp_p = start;
@@ -54,6 +54,7 @@ void findRoot(node** start, node** root) {
       *root = temp_p;
       return;
     }
+    temp_p = temp_p->next_p;
   }
 }
 
@@ -63,14 +64,14 @@ void calculateCodes(node** nd, char* code) {
     printf("character: %c, code: %s\n", (*nd)->character, code);
   }
   else {
-    int len = strlen(code) + 1;
+    int len = strlen(code) + 2;
     char* newCode = malloc(len * sizeof(char));
     strcpy(newCode, code);
     strcat(newCode, "0");
-    //calculateCodes((**nd).left, newCode);
+    calculateCodes(&((**nd).left), newCode);
     strcpy(newCode, code);
     strcat(newCode, "1");
-    //calculateCodes((**nd)->right, newCode);
+    calculateCodes(&((**nd).right), newCode);
     free(code);
   }
 }
@@ -116,7 +117,6 @@ void findLowest(node** start, node** lowest) {
     }
     temp_p = temp_p->next_p;
   }
-  printf("lowest: %d\n", (*lowest)->frequency);
   (*lowest)->treeized = 1;
 }
 
