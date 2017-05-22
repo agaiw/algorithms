@@ -1,8 +1,32 @@
+/*
+* This program takes string of characters as an input and generates
+* Huffman-encoded stream of 0s and 1s based on it. 
+* When counting frequencies of particular characters, whole input
+* string is taken into account.
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
 
+/*
+* Structure:    node
+*
+* Description:  This structure is used as a node in Huffman tree. Moreover, all nodes
+*               are connected with each other using linked list.
+* 
+* Fields:       character - in case of leaf nodes this field contains character;
+*                           otherwise it contains '\0'
+*               frequency - contains frequency of character(s) under/in this node
+*               code      - in case of leaf nodes this field contains Huffman code;
+*                           otherwise it contains NULL pointer
+*               next_p    - pointer to next element in nodes' list
+*               left      - left child in Huffman tree
+*               right     - right child in Huffman tree
+*               treeized  - when whole tree is generated, contains 0 for root and 1
+*                           for other nodes
+*/
 typedef struct node {
   char character;
   int frequency;
@@ -110,25 +134,63 @@ void findRoot(node** start, node** root);
 */
 void freeList(node** start);
 
+/* Function:    encodeInput 
+*
+* Description:  This function encodes given string using previously
+*               generated Huffman codes
+*
+* Parameters:   [in] input - string to be encoded using Huffman codes
+*               [in] start - head of nodes list
+*
+* Return:       void
+*/
+void encodeInput(char* input, node** start);
+
 int main (int argc, char* argv[]) {
 
   node* start = NULL;
-  char* input = "In computer science and information theory, a Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression. The process of finding and/or using such a code proceeds by means of Huffman coding, an algorithm developed by David A. Huffman while he was a Sc.D. student at MIT, and published in the 1952 paper 'A Method for the Construction of Minimum-Redundancy Codes'. The output from Huffman's algorithm can be viewed as a variable-length code table for encoding a source symbol (such as a character in a file). The algorithm derives this table from the estimated probability or frequency of occurrence (weight) for each possible value of the source symbol. As in other entropy encoding methods, more common symbols are generally represented using fewer bits than less common symbols. Huffman's method can be efficiently implemented, finding a code in time linear to the number of input weights if these weights are sorted.[2] However, although optimal among methods encoding symbols separately, Huffman coding is not always optimal among all compression methods.";
+  char* input = "In computer science and information theory, a Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression. The process of finding and/or using such a code proceeds by means of Huffman coding, an algorithm developed by David A. Huffman while he was a Sc.D. student at MIT.";
 
   const int freqSum = strlen(input);
   calculateFrequencies(input, &start);
   generateTree(&start, freqSum);
   node* root = NULL;
   findRoot(&start, &root);
-  printf("Char\tCount\tCode\n");
+  printf("PLAIN STRING:\n");
+  printf("\n%s\n", input);
+  printf("\nASCII\tChar\tCount\tCode\n");
   char* code0 = malloc(2 * sizeof(char));
   strcpy(code0, "0");
   calculateCodes(&(root->left), &code0);
   char* code1 = malloc(2 * sizeof(char));
   strcpy(code1, "1");
   calculateCodes(&(root->right), &code1);
- 
+  encodeInput(input, &start); 
   return 0;
+}
+
+void encodeInput(char* input, node** start) {
+  int codedBitLen = 0;
+  int uncodedBitLen = strlen(input) * 8;
+  char* input_p = input;
+  printf("\nENCODED STRING:\n\n");
+  while (*input_p != '\0') {
+    node* temp_p = *start;
+    while (temp_p != NULL) {
+      if (*input_p == temp_p->character) {
+        codedBitLen += strlen(temp_p->code);
+        printf("%s", temp_p->code);
+      }
+      temp_p = temp_p->next_p;
+    }
+    input_p++;
+  }
+  printf("\n\n");
+  printf("Bit length before coding: %d\n", uncodedBitLen);
+  printf("Bit length after coding: %d\n", codedBitLen);
+  float uncodedBitLenFloat = strlen(input) * 8.0;
+  float compressionRate = (codedBitLen/uncodedBitLenFloat) * 100;
+  printf("After coding string uses %0.2f percent of original space.\n", compressionRate);
 }
 
 void freeList(node** start) {
@@ -160,7 +222,7 @@ void findRoot(node** start, node** root) {
 void calculateCodes(node** nd, char** code) {
   if ((*nd)->character != '\0') {
     (*nd)->code = *code;
-    printf("%c\t%d\t%s\n", (*nd)->character, (*nd)->frequency, *code);
+    printf("%d\t%c\t%d\t%s\n", (*nd)->character, (*nd)->character, (*nd)->frequency, *code);
   }
   else {
     int len = strlen(*code) + 2;
@@ -226,7 +288,6 @@ void calculateFrequencies(char* input, node** start) {
 
   // special treatment for first character due to efficiency,
   // as list is not pointing to a valid node yet
-  // TODO add handling for empty/null input
   *start = malloc(sizeof(node));
   (*start)->character = *char_p;
   (*start)->frequency = 1;
