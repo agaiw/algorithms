@@ -1,4 +1,6 @@
 /*
+* Program: huffman.c
+*
 * This program takes string of characters as an input and generates
 * Huffman-encoded stream of 0s and 1s based on it. 
 * When counting frequencies of particular characters, whole input
@@ -24,8 +26,8 @@
 *               next_p    - pointer to next element in nodes' list
 *               left      - left child in Huffman tree
 *               right     - right child in Huffman tree
-*               treeized  - when whole tree is generated, contains 0 for root and 1
-*                           for other nodes
+*               treeized  - when whole tree is generated, contains 0 for root
+*                           and 1 for other nodes
 */
 typedef struct node {
   char character;
@@ -70,6 +72,17 @@ void calculateFrequencies(char* input, node** start);
 */
 void generateTree(node** start, const int freqSum);
 
+/* Function:    findLowest 
+*
+* Description:  Finds node which has lowest frequency amongst all not-yet-treeized nodes.
+*
+* Parameters:   [in] start - head of nodes list
+*               [in/out] lowest - pointer to lowest node
+*
+* Return:       void
+*/
+void findLowest(node** start, node** lowest);
+
 /* Function:    treeizeNodes 
 *
 * Description:  Constructs new node based on other nodes which are not already treeized
@@ -85,16 +98,17 @@ void generateTree(node** start, const int freqSum);
 */
 void treeizeNodes(node** start, node** newNode, node **right, node **left);
 
-/* Function:    findLowest 
+/* Function:    findRoot 
 *
-* Description:  Finds node which has lowest frequency amongst all not-yet-treeized nodes.
+* Description:  Traverses throught list of nodes, finding the one which acts
+*               as a root of Huffman tree.
 *
 * Parameters:   [in] start - head of nodes list
-*               [in/out] lowest - pointer to lowest node
+*               [in/out] root - root node of Huffman tree
 *
 * Return:       void
 */
-void findLowest(node** start, node** lowest);
+void findRoot(node** start, node** root);
 
 /* Function:    calculateCodes 
 *
@@ -111,29 +125,6 @@ void findLowest(node** start, node** lowest);
 */
 void calculateCodes(node** nd, char** code);
 
-/* Function:    findRoot 
-*
-* Description:  Traverses throught list of nodes, finding the one which acts
-*               as a root of Huffman tree.
-*
-* Parameters:   [in] start - head of nodes list
-*               [in/out] root - root node of Huffman tree
-*
-* Return:       void
-*/
-void findRoot(node** start, node** root);
-
-/* Function:    freeList 
-*
-* Description:  Frees memory previously allocated for all nodes of Huffman tree
-*               and all strings representing Huffman codes.
-*
-* Parameters:   [in] start - head of nodes list
-*
-* Return:       void
-*/
-void freeList(node** start);
-
 /* Function:    encodeInput 
 *
 * Description:  This function encodes given string using previously
@@ -146,18 +137,44 @@ void freeList(node** start);
 */
 void encodeInput(char* input, node** start);
 
+/* Function:    freeList 
+*
+* Description:  Frees memory previously allocated for all nodes of Huffman tree
+*               and all strings representing Huffman codes.
+*
+* Parameters:   [in] start - head of nodes list
+*
+* Return:       void
+*/
+void freeList(node** start);
+
+
 int main (int argc, char* argv[]) {
 
   node* start = NULL;
   char* input = "In computer science and information theory, a Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression. The process of finding and/or using such a code proceeds by means of Huffman coding, an algorithm developed by David A. Huffman while he was a Sc.D. student at MIT.";
 
   const int freqSum = strlen(input);
-  calculateFrequencies(input, &start);
-  generateTree(&start, freqSum);
-  node* root = NULL;
-  findRoot(&start, &root);
+
+  // printout of input string
   printf("PLAIN STRING:\n");
   printf("\n%s\n", input);
+
+  // generating list of nodes representing characters
+  // and their frequencies
+  calculateFrequencies(input, &start);
+
+  // extending previously created list with other nodes, representing
+  // higher nodes of Huffman tree, and creating relations between all
+  // nodes of tree
+  generateTree(&start, freqSum);
+
+  // finding root node of Huffman tree
+  node* root = NULL;
+  findRoot(&start, &root);
+
+  // finding Huffman codes for characters and printing out
+  // table of all characters & codes
   printf("\nASCII\tChar\tCount\tCode\n");
   char* code0 = malloc(2 * sizeof(char));
   strcpy(code0, "0");
@@ -165,7 +182,12 @@ int main (int argc, char* argv[]) {
   char* code1 = malloc(2 * sizeof(char));
   strcpy(code1, "1");
   calculateCodes(&(root->right), &code1);
-  encodeInput(input, &start); 
+
+  // printing out input string using Huffman codes
+  encodeInput(input, &start);
+
+  // cleanup
+  freeList(&start); 
   return 0;
 }
 
